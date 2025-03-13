@@ -1,36 +1,50 @@
 // Set the current year in the footer
 document.getElementById('current-year').textContent = new Date().getFullYear();
 
-// Form submission handler for static site
+// Add event listener for form submission
+document.addEventListener('DOMContentLoaded', function() {
+  const form = document.getElementById('subscription-form');
+  if (form) {
+    form.addEventListener('submit', handleFormSubmit);
+  }
+});
+
+// Form submission handler for Google Apps Script Web App
 function handleFormSubmit(event) {
   event.preventDefault();
+  
   const formStatus = document.getElementById('form-status');
   formStatus.innerHTML = "Submitting...";
   
   // Get form data
-  const form = event.target;
-  const name = form.elements.name.value;
-  const email = form.elements.email.value;
+  const name = document.getElementById('name').value;
+  const email = document.getElementById('email').value;
   
-  // For GitHub Pages static site, we'll use Formspree or a similar service
-  // This is a simplified example showing what happens when the form is submitted
+  // Replace with your Google Apps Script Web App URL
+  const scriptURL = 'https://script.google.com/macros/s/AKfycbxmC07Sy7vmu3NktEpL-p3RxA8p_ah9wIyn0Brgil4PPgc4tvcILD3mEC4GRcGIRtkr/exec';
   
-  // In a real implementation, you would send the data to a service like:
-  // fetch('https://formspree.io/f/yourformid', {
-  //   method: 'POST',
-  //   headers: {'Content-Type': 'application/json'},
-  //   body: JSON.stringify({name, email})
-  // })
-  
-  // For demo purposes, we'll simulate a successful submission
-  setTimeout(() => {
-    formStatus.innerHTML = '<div class="success-message">Thank you for subscribing! Check your email for confirmation.</div>';
-    form.reset();
-    
-    // You could redirect to a thank you page with:
-    // window.location.href = 'thank-you.html';
-  }, 1500);
-  
-  // For demonstration, we'll log the data to console
-  console.log(`Form submitted with name: ${name} and email: ${email}`);
+  // Send data to Google Apps Script
+  fetch(scriptURL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      name: name,
+      email: email
+    })
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      formStatus.innerHTML = '<div style="background-color: #d4edda; color: #155724; border-radius: 5px; padding: 10px;">Thank you for subscribing! Check your email for confirmation.</div>';
+      document.getElementById('subscription-form').reset();
+    } else {
+      formStatus.innerHTML = `<div style="background-color: #f8d7da; color: #721c24; border-radius: 5px; padding: 10px;">${data.message}</div>`;
+    }
+  })
+  .catch(error => {
+    formStatus.innerHTML = '<div style="background-color: #f8d7da; color: #721c24; border-radius: 5px; padding: 10px;">There was an error submitting your form. Please try again later.</div>';
+    console.error('Error submitting form:', error);
+  });
 }
